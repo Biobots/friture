@@ -26,11 +26,13 @@ import rtmixer
 from numpy import ndarray, vstack, int8, int16, float64, float32, frombuffer, concatenate
 import numpy as np
 
+import threading
+
 # the sample rate below should be dynamic, taken from PyAudio/PortAudio
 SAMPLING_RATE = 48000
 FRAMES_PER_BUFFER = 512
 
-__audiobackendInstance = None
+__audiobackendInstance = []
 
 # python-sounddevice (bindings to PortAudio)
 # > no device friendly name
@@ -58,11 +60,13 @@ __audiobackendInstance = None
 # > doc, features are lacking
 
 
-def AudioBackend():
+def AudioBackend(idx=0):
     global __audiobackendInstance
-    if __audiobackendInstance is None:
-        __audiobackendInstance = __AudioBackend()
-    return __audiobackendInstance
+    curIdx = len(__audiobackendInstance) - 1
+    while curIdx < idx:
+        __audiobackendInstance.append(__AudioBackend())
+        curIdx += 1
+    return __audiobackendInstance[idx]
 
 
 class __AudioBackend(QtCore.QObject):
@@ -462,6 +466,7 @@ class __AudioBackend(QtCore.QObject):
                 self.logger.info("Stream overflow!")
                 self.underflow.emit()
 
+            #self.logger.warn(id(self))
             self.new_data_available.emit(floatdata, input_time, input_overflow)
 
             self.chunk_number += 1

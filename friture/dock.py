@@ -35,6 +35,7 @@ class Dock(QtWidgets.QWidget):
         self.control_bar = ControlBar(self)
 
         self.control_bar.combobox_select.activated.connect(self.indexChanged)
+        self.control_bar.device_select.activated.connect(self.deviceChanged)
         self.control_bar.settings_button.clicked.connect(self.settings_slot)
         self.control_bar.close_button.clicked.connect(self.closeClicked)
 
@@ -47,6 +48,7 @@ class Dock(QtWidgets.QWidget):
         # self.setWidget(self.dockwidget)
 
         self.audiowidget = None
+        self.deviceIdx = 0
         self.widget_select(widgetId)
 
     # note that by default the closeEvent is accepted, no need to do it explicitely
@@ -56,6 +58,9 @@ class Dock(QtWidgets.QWidget):
     def closeClicked(self, checked):
         self.close()
 
+    def deviceChanged(self, index):
+        self.deviceIdx = index
+        self.widget_select(self.widgetId)
     # slot
     def indexChanged(self, index):
         if index > len(widgetIds()):
@@ -74,8 +79,8 @@ class Dock(QtWidgets.QWidget):
 
         self.widgetId = widgetId
         self.audiowidget = getWidgetById(widgetId)["Class"](self)
-        self.audiowidget.set_buffer(self.audiobuffer)
-        self.audiobuffer.new_data_available.connect(self.audiowidget.handle_new_data)
+        self.audiowidget.set_buffer(self.audiobuffer[self.deviceIdx])
+        self.audiobuffer[self.deviceIdx].new_data_available.connect(self.audiowidget.handle_new_data)
 
         self.layout.addWidget(self.audiowidget)
 

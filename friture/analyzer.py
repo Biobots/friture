@@ -69,11 +69,12 @@ class Friture(QMainWindow, ):
         self.ui.setupUi(self)
 
         # Initialize the audio data ring buffer
-        self.audiobuffer = AudioBuffer()
+        self.audiobuffer = [AudioBuffer(), AudioBuffer()]
 
         # Initialize the audio backend
         # signal containing new data from the audio callback thread, processed as numpy array
-        AudioBackend().new_data_available.connect(self.audiobuffer.handle_new_data)
+        AudioBackend().new_data_available.connect(self.audiobuffer[0].handle_new_data)
+        AudioBackend(1).new_data_available.connect(self.audiobuffer[1].handle_new_data)
 
         # this timer is used to update widgets that just need to display as fast as they can
         self.display_timer = QtCore.QTimer()
@@ -87,8 +88,8 @@ class Friture(QMainWindow, ):
         self.settings_dialog = Settings_Dialog(self)
 
         self.level_widget = Levels_Widget(self)
-        self.level_widget.set_buffer(self.audiobuffer)
-        self.audiobuffer.new_data_available.connect(self.level_widget.handle_new_data)
+        self.level_widget.set_buffer(self.audiobuffer[0])
+        self.audiobuffer[0].new_data_available.connect(self.level_widget.handle_new_data)
 
         self.hboxLayout = QHBoxLayout(self.ui.centralwidget)
         self.hboxLayout.setContentsMargins(0, 0, 0, 0)
@@ -104,6 +105,7 @@ class Friture(QMainWindow, ):
         self.display_timer.timeout.connect(self.dockmanager.canvasUpdate)
         self.display_timer.timeout.connect(self.level_widget.canvasUpdate)
         self.display_timer.timeout.connect(AudioBackend().fetchAudioData)
+        self.display_timer.timeout.connect(AudioBackend(1).fetchAudioData)
 
         # toolbar clicks
         self.ui.actionStart.triggered.connect(self.timer_toggle)
@@ -150,6 +152,7 @@ class Friture(QMainWindow, ):
     # event handler
     def closeEvent(self, event):
         AudioBackend().close()
+        AudioBackend(1).close()
         self.saveAppState()
         event.accept()
 
@@ -235,12 +238,14 @@ class Friture(QMainWindow, ):
             self.display_timer.stop()
             self.ui.actionStart.setText("Start")
             AudioBackend().pause()
+            AudioBackend(1).pause()
             self.dockmanager.pause()
         else:
             self.logger.info("Timer start")
             self.display_timer.start()
             self.ui.actionStart.setText("Stop")
             AudioBackend().restart()
+            AudioBackend(1).restart()
             self.dockmanager.restart()
 
 

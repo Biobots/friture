@@ -38,6 +38,14 @@ class ControlBar(QtWidgets.QWidget):
         self.combobox_select.setCurrentIndex(0)
         self.combobox_select.setToolTip("Select the type of audio widget")
 
+        self.device_select = QtWidgets.QComboBox(self)
+
+        self.device_select.addItem("first")
+        self.device_select.addItem("second")
+
+        self.device_select.setCurrentIndex(0)
+        self.device_select.setToolTip("Select the device")
+
         self.settings_button = QtWidgets.QToolButton(self)
         self.settings_button.setToolTip("Customize the audio widget")
 
@@ -52,6 +60,7 @@ class ControlBar(QtWidgets.QWidget):
         self.close_button.setToolTip("Close the audio widget")
 
         self.layout.addWidget(self.combobox_select)
+        self.layout.addWidget(self.device_select)
         self.layout.addWidget(self.settings_button)
         self.layout.addWidget(self.close_button)
         self.layout.addStretch()

@@ -56,6 +56,7 @@ class Settings_Dialog(QtWidgets.QDialog, Ui_Settings_Dialog):
 
         for device in devices:
             self.comboBox_inputDevice.addItem(device)
+            self.comboBox_inputDevice2.addItem(device)
 
         channels = AudioBackend().get_readable_current_channels()
         for channel in channels:
@@ -64,6 +65,8 @@ class Settings_Dialog(QtWidgets.QDialog, Ui_Settings_Dialog):
 
         current_device = AudioBackend().get_readable_current_device()
         self.comboBox_inputDevice.setCurrentIndex(current_device)
+        current_device = AudioBackend(1).get_readable_current_device()
+        self.comboBox_inputDevice2.setCurrentIndex(current_device)
 
         first_channel = AudioBackend().get_current_first_channel()
         self.comboBox_firstChannel.setCurrentIndex(first_channel)
@@ -72,6 +75,7 @@ class Settings_Dialog(QtWidgets.QDialog, Ui_Settings_Dialog):
 
         # signals
         self.comboBox_inputDevice.currentIndexChanged.connect(self.input_device_changed)
+        self.comboBox_inputDevice2.currentIndexChanged.connect(self.input_device_changed2)
         self.comboBox_firstChannel.activated.connect(self.first_channel_changed)
         self.comboBox_secondChannel.activated.connect(self.second_channel_changed)
         self.radioButton_single.toggled.connect(self.single_input_type_selected)
@@ -110,6 +114,38 @@ class Settings_Dialog(QtWidgets.QDialog, Ui_Settings_Dialog):
         first_channel = AudioBackend().get_current_first_channel()
         self.comboBox_firstChannel.setCurrentIndex(first_channel)
         second_channel = AudioBackend().get_current_second_channel()
+        self.comboBox_secondChannel.setCurrentIndex(second_channel)
+
+        self.parent().ui.actionStart.setChecked(True)
+
+    # slot
+    def input_device_changed2(self, index):
+        self.parent().ui.actionStart.setChecked(False)
+
+        success, index = AudioBackend(1).select_input_device(index)
+
+        self.comboBox_inputDevice2.setCurrentIndex(index)
+
+        if not success:
+            # Note: the error message is a child of the settings dialog, so that
+            # that dialog remains on top when the error message is closed
+            error_message = QtWidgets.QErrorMessage(self)
+            error_message.setWindowTitle("Input device error")
+            error_message.showMessage("Impossible to use the selected input device, reverting to the previous one")
+
+        # reset the channels
+        channels = AudioBackend(1).get_readable_current_channels()
+
+        self.comboBox_firstChannel.clear()
+        self.comboBox_secondChannel.clear()
+
+        for channel in channels:
+            self.comboBox_firstChannel.addItem(channel)
+            self.comboBox_secondChannel.addItem(channel)
+
+        first_channel = AudioBackend(1).get_current_first_channel()
+        self.comboBox_firstChannel.setCurrentIndex(first_channel)
+        second_channel = AudioBackend(1).get_current_second_channel()
         self.comboBox_secondChannel.setCurrentIndex(second_channel)
 
         self.parent().ui.actionStart.setChecked(True)

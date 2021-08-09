@@ -29,6 +29,9 @@
     <widget class="QComboBox" name="comboBox_inputDevice"/>
    </item>
    <item>
+    <widget class="QComboBox" name="comboBox_inputDevice2"/>
+   </item>
+   <item>
     <spacer name="verticalSpacer_3">
      <property name="orientation">
       <enum>Qt::Vertical</enum>
